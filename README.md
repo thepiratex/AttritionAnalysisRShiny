@@ -17,3 +17,12 @@ Employee Attrition impacts all businesses, irrespective of geography, industry a
 *Data has 1400 observations only
 
 
+#### Features
+* Mobile Friendly 
+* Adapts to screen size on it's own
+* Material Design
+* Built using R-Shiny, therefore blazing fast
+
+
+## Screenshots
+![iPad View](https://i.imgur.com/loGvOSu.png)
