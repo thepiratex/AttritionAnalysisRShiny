@@ -32,3 +32,6 @@ Employee Attrition impacts all businesses, irrespective of geography, industry a
 <img src="https://i.imgur.com/gSGcbyG.png" width="500">
 <img src="https://i.imgur.com/lpymR3B.png" width="500">
 
+#### Model Info
+<img src="https://i.imgur.com/DNpsXWt.png">
+
