@@ -1,3 +1,4 @@
+
 #############load the required packages################
 library(shiny)
 require(shinydashboard)
@@ -8,11 +9,11 @@ library(caret)
 library(gbm)
 library(pROC)
 
-#########################Preprocessing##########################
+######################### Loading Dataset ##########################
 df <- read.csv("data.csv")
 colnames(df)[1] <- 'Age'
 
-#######################################################################
+######################### New Dataframe for further preprocessing #############################
 model <- df
 model[, 'Education'] <-
   factor(
@@ -70,11 +71,6 @@ model[, 'JobLevel'] <-
          levels = c('1', '2', '3', '4', '5'),
          ordered = TRUE)
 
-
-#Remove : EmployeeCount
-#EmployeeNumber
-
-# solution
 model %>% mutate_if(is.integer, as.numeric)
 colnames(model)[2] <- 'y'
 
@@ -117,6 +113,7 @@ model[, 'y'] <- (ifelse(model[, 'y'] == 'Yes', 1, 0))
 model[, 'OverTime'] <- ifelse(model[, 'OverTime'] == 'Yes', 1, 0)
 model[, 'Gender'] <- ifelse(model[, 'Gender'] == 'Male', 1, 0)
 
+######### Variable to be used for training #########
 model_train <- model[c(
   "Age",
   "BusinessTravel",
@@ -151,19 +148,15 @@ model_train <- model[c(
   "YearsWithCurrManager"
 )]
 
-
-
-############################
+############# One-Hot Encoding on training variables ##############
 dummies <- dummyVars(~ ., data = model_train)
-
 ex <- data.frame(predict(dummies, newdata = model_train))
-
 names(ex) <- gsub("\\.", "", names(ex))
 d <- cbind(model$y, ex)
 names(d)[1] <- "y"
-
 sum(model$y)
 
+########### Find linear combinations and remove #################
 comboInfo <- findLinearCombos(d)
 comboInfo
 # remove columns identified that led to linear combos
@@ -175,26 +168,25 @@ y <- model$y
 d <- cbind(y, d)
 rm(y, comboInfo)
 
+##########Removing all values which have zero variability##########
 nzv <- nearZeroVar(d, saveMetrics = TRUE)
 head(nzv)
 ? nearZeroVar
 #d <- d[, c(TRUE,!nzv$zeroVar[2:ncol(d)])]
 d <- d[, c(TRUE, !nzv$nzv[2:ncol(d)])]
-
-rm(nzv) #
-
+rm(nzv) #Cleaning R environment
 
 preProcValues <- preProcess(d[, 2:ncol(d)], method = c("range"))
 d <- predict(preProcValues, d)
 # te set
 rm(preProcValues)
-
 sum(d$y)
 
+##### Reading default values to predict for test model ########
 df1 <- read.csv("test.csv")
 names(df1)[1] <- "Age"
 
-##############################################################
+###################### Partition data into test-train ######################
 set.seed(1234) # set a seed so you can replicate your results
 inTrain <- createDataPartition(y = d$y,   # outcome variable
                                p = .90,   # % of training data you want
@@ -204,6 +196,8 @@ train <- d[inTrain, ]  # training data set
 test <- d[-inTrain, ]
 train[, 'y'] <- as.factor(ifelse(train[, 'y'] == 1, 'Yes', 'No'))
 #train[,'y'] <- as.factor(train[,'y'])
+
+####### Specify training control parameters ########
 ctrl <- caret::trainControl(
   method = "cv",
   number = 5,
@@ -212,7 +206,7 @@ ctrl <- caret::trainControl(
 )
 
 
-# Simple GBM
+####### Train GBM model on dataset ########## 
 gbmfit <- train(
   y ~ .,
   data = train,
@@ -225,6 +219,8 @@ gbmfit <- train(
 gbmtrain <- predict(gbmfit, train, type = 'prob')
 gbmpreds <- predict(gbmfit, test, type = 'prob')
 gbmvalid <- predict(gbmfit, df1, type = "prob")
+
+##### Evaluate ROC on train dataset #######
 gbm.ROC.train <-
   pROC::roc(
     train$y,
@@ -238,7 +234,7 @@ gbm.ROC.train <-
     show.thres = TRUE,
     print.auc = TRUE
   )
-
+##### Evaluate ROC on test dataset #######
 gbm.ROC.test <-
   pROC::roc(
     test$y,
@@ -253,13 +249,7 @@ gbm.ROC.test <-
     print.auc = TRUE
   )
 
-
-# gbmpreds <- predict(gbmfit, test)
-# preds <- predict(gbmfit,df1,type='prob')
-# preds[[2]]
-
-
-#########################UI#################################
+##################### R-Shiny App UI ###########################
 
 #Dashboard header carrying the title of the dashboard
 header <- dashboardHeader(title = "Employee Attrition")
