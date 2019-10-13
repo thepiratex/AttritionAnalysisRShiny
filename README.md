@@ -16,13 +16,18 @@ Employee Attrition impacts all businesses, irrespective of geography, industry a
 *Metrics of success: AUC curve
 *Data has 1400 observations only
 
-
-#### Features
+## Features
 * Mobile Friendly 
 * Adapts to screen size on it's own
 * Material Design
 * Built using R-Shiny, therefore blazing fast
 
+# Modeling
+* Trying 
 
 ## Screenshots
-![iPad View](https://i.imgur.com/loGvOSu.png)
+![iPad View](https://i.imgur.com/loGvOSu.png | width=100)
+![iPad View](https://i.imgur.com/tB5Cefk.png)
+![iPad View](https://i.imgur.com/yk73PXL.png)
+![iPad View](https://i.imgur.com/gSGcbyG.png)
+![iPad View](https://i.imgur.com/lpymR3B.png)
